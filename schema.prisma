@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model Product {
+  id           String   @id
+  title        String
+  image        String
+  subtitle     String
+  brandName    String
+  retailerName String
+  details      String
+  brand        Brand    @relation(fields: [brandName], references: [name])
+  retailer     Retailer @relation(fields: [retailerName], references: [name])
+  reviews      Review[]
+  sales        Sale[]
+  tags         Tag[]    @relation("ProductToTag")
+}
+
+model Review {
+  customer  String
+  review    String
+  score     Int
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@id([customer, productId], name: "reviewId")
+}
+
+model Brand {
+  name     String    @id
+  products Product[]
+}
+
+model Retailer {
+  name     String    @id
+  products Product[]
+}
+
+model Tag {
+  name     String    @id
+  products Product[] @relation("ProductToTag")
+}
+
+model Sale {
+  weekEnding     DateTime
+  retailSales    Int
+  wholesaleSales Int
+  unitsSold      Int
+  retailerMargin Int
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
+
+  @@id([weekEnding, productId], name: "saleId")
+}
